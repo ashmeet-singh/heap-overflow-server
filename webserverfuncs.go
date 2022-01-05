@@ -1,6 +1,12 @@
 package main
 
-import ()
+import (
+	"fmt"
+)
 
 func initializeWebServer() {
+	err := addUserToDatabase("user@test.com")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
