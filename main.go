@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/pbkdf2"
@@ -13,6 +14,7 @@ import (
 	"os"
 	// "path"
 	// "strconv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -51,11 +53,13 @@ func main() {
 		fmt.Println(string(b))
 		fmt.Println(m.Name)
 		fmt.Println(m.Password)
-
+		password_bytes, _ := hex.DecodeString(m.Password)
 		salt := make([]byte, 32)
 		rand.Read(salt)
-		hashed_key := pbkdf2.Key([]byte(m.Password), salt, 100000, 32, sha256.New)
+		hashed_key := pbkdf2.Key(password_bytes, salt, 100000, 32, sha256.New)
 		fmt.Println(string(hashed_key))
+		doc := bson.D{{"N", m.Name}, {"P", "0-" + hex.EncodeToString(salt) + hex.EncodeToString(hashed_key)}}
+		client.Database("HO").Collection("users").InsertOne(context.TODO(), doc)
 	})
 
 	err1 := http.ListenAndServe(":8080", nil)
