@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"golang.org/x/crypto/pbkdf2"
 	// "io"
 	"net/http"
 	// "net/url"
@@ -48,6 +51,11 @@ func main() {
 		fmt.Println(string(b))
 		fmt.Println(m.Name)
 		fmt.Println(m.Password)
+
+		salt := make([]byte, 32)
+		rand.Read(salt)
+		hashed_key := pbkdf2.Key([]byte(m.Password), salt, 100000, 32, sha256.New)
+		fmt.Println(string(hashed_key))
 	})
 
 	err1 := http.ListenAndServe(":8080", nil)
